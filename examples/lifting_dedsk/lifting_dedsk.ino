@@ -22,6 +22,7 @@ static const uint16_t     screenHeight = 126;
 static const size_t lv_buffer_size = screenWidth*screenHeight*sizeof(lv_color_t);
 static lv_disp_draw_buf_t draw_buf;
 static lv_color_t    *     buf=NULL;
+//static lv_color_t    *     buf[screenWidth*];
 
 lv_obj_t* lv_show_time_date_t = NULL;
 lv_obj_t *wifi_test_obj = NULL;
@@ -193,7 +194,7 @@ void printLocalTime()
     show_timeinfo.tm_wday = timeinfo.tm_wday;
     show_timeinfo.tm_mday = timeinfo.tm_mday;
     show_timeinfo.tm_sec = timeinfo.tm_sec;
-    //Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+    Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
 }
 
 // Callback function (get's called when time adjusts via NTP)
@@ -554,7 +555,8 @@ void lv_show_time_date(void)
     lv_obj_set_style_radius(lv_show_time_date_t, 0, 0);
 
     char date_t[30] = { 0 };
-    sprintf(date_t, "%s\n%04d/%02d/%02d",week[show_timeinfo.tm_wday-1], show_timeinfo.tm_year+1900, show_timeinfo.tm_mon+1, show_timeinfo.tm_mday);
+
+    sprintf(date_t, "%s\n%04d/%02d/%02d",week[show_timeinfo.tm_wday-1>=0?show_timeinfo.tm_wday-1:0], show_timeinfo.tm_year+1900, show_timeinfo.tm_mon+1, show_timeinfo.tm_mday);
     my_print(date_t);
     lv_obj_t* date_label = lv_label_create(lv_show_time_date_t);
     lv_obj_set_style_text_color(date_label, lv_color_hex(0xffffff), 0);
@@ -610,7 +612,7 @@ void loop()
         if(label != NULL)
         {
             char date_t[30] = { 0 };
-            sprintf(date_t, "%s\n%04d/%02d/%02d",week[show_timeinfo.tm_wday-1], show_timeinfo.tm_year+1900, show_timeinfo.tm_mon+1, show_timeinfo.tm_mday);
+            sprintf(date_t, "%s\n%04d/%02d/%02d",week[show_timeinfo.tm_wday-1>=0?show_timeinfo.tm_wday-1:0], show_timeinfo.tm_year+1900, show_timeinfo.tm_mon+1, show_timeinfo.tm_mday);
             my_print(date_t);
             lv_label_set_text(label, date_t); 
         }
