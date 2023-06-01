@@ -1,0 +1,170 @@
+#include "time_date.h"
+
+//uint8_t qz_time_1s = 0;
+
+char AlarmTime_A_1s = 0; //闹钟A 1S标志位
+
+extern lv_obj_t* qz_Interface5_t;
+extern lv_obj_t* qz_Interface4_t;
+extern lv_obj_t* qz_Interface3_t;
+extern lv_obj_t* qz_Interface2_t;
+extern lv_obj_t* qz_Interface1_t;                               
+
+date_time date_time = {0};     //当前时间
+date_time qz_date_time_t_old = {0}; //用于时间更新后更新显示
+
+uint8_t  qz_days[] = {0, 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
+
+char get_week(int day, int month, int year)  
+{
+	int w = 0;
+  
+    if(month <= 2)
+    {
+        month += 12; 
+        year--;
+    }
+	
+    w = ((day + 2 * month + 3 * (month + 1) / 5 + year + year / 4 - year / 100 + year / 400 + 1) % 7 + 7) % 7;
+		return w;
+}
+
+void date_time_init(void) 
+{
+	date_time.sec  = 00; 
+	date_time.min  = 59;
+	date_time.hour = 23;
+	date_time.day  = 31;
+	date_time.month = 5;	
+	date_time.year = 2023;
+
+	date_time.week = get_week(date_time.day, date_time.month, date_time.year);	
+	printf("init date_time.week:%d\r\n", date_time.week);
+}
+
+
+extern uint8_t current_interface;        //当前界面
+void time_update(void) 	 //时间更新
+{
+		if(AlarmTime_A_1s) //1S更新
+		{
+				AlarmTime_A_1s = 0;
+				date_time.sec++;			
+				if(date_time.sec == 60) //秒
+				{
+						date_time.sec = 0;
+						date_time.min++;
+						//printf("t:%d %d %d,%d,d:%d %d %d\r\n", date_time.sec, date_time.min, 
+						//date_time.hour, date_time.week, date_time.day, date_time.month, date_time.year);
+            
+						if(date_time.min == 60) //分
+						{
+								date_time.min = 0;
+								date_time.hour++;
+								if(date_time.hour == 24) //时
+								{
+										date_time.hour = 0;
+										date_time.day++;
+
+										if(date_time.month == 2) //天 2月
+										{
+												if(((date_time.year)%400 == 0) || (((date_time.year)%100 != 0)&&date_time.year%4==0))
+												{
+														if(date_time.day == 30)
+														{
+																date_time.day = 1;
+																date_time.month++;
+														}
+												}
+												else if(date_time.day == 29)
+												{
+														date_time.day = 1;
+														date_time.month++;
+												}
+										}
+										else if(date_time.day == (qz_days[date_time.month]+1)) //天 
+										{
+												date_time.day = 1;
+												date_time.month++;
+												if(date_time.month == 13) //月
+												{
+														date_time.month = 1;
+														date_time.year++;
+												}
+										}
+                    
+                    date_time.week = get_week(date_time.day, date_time.month, date_time.year);	
+								}
+                qz_save();
+						}
+				}
+
+		}   //if(AlarmTime_A_1s) end
+    
+    switch(current_interface)
+    {
+        case 1:  //界面1
+        {
+            if(qz_Interface1_t == NULL)
+              break;
+            if(qz_date_time_t_old.min != date_time.min) //
+            {
+                qz_date_time_t_old.min = date_time.min;
+                
+                //printf("[%d, %d]\r\n", date_time.hour, date_time.min);
+              
+                qz_Interface1_set_time(0, (uint8_t)(date_time.hour&0xff) ,(uint8_t)(date_time.min&0xff));
+            }
+            if(qz_date_time_t_old.day !=date_time.day)
+            {
+                qz_date_time_t_old.day = date_time.day;
+                qz_Interface1_set_date(date_time.day, date_time.month, date_time.year);
+                qz_Interface1_set_week(date_time.week);
+            }
+        }break;
+        case 2: //界面2
+        {
+            if(qz_Interface2_t == NULL)
+             break;
+            if(qz_date_time_t_old.sec != date_time.sec) //
+            {
+               qz_date_time_t_old.sec = date_time.sec;
+               qz_Interface2_set_clock_time(date_time.sec, date_time.min, date_time.hour);
+            }
+            
+            if(qz_date_time_t_old.min != date_time.min) //
+            {
+               qz_date_time_t_old.min = date_time.min;
+               //qz_Interface2_set_clock_time(date_time.sec, date_time.min, date_time.hour);
+               qz_Interface2_set_time(date_time.min, date_time.hour);
+            }
+            
+            if(qz_date_time_t_old.day !=date_time.day)
+            {
+                qz_date_time_t_old.day = date_time.day;
+                qz_Interface2_set_date(date_time.day, date_time.month, date_time.year);
+                qz_Interface2_set_week(date_time.week);
+            }
+             
+        }break;     
+        case 3: //界面3
+        {
+            if(qz_Interface3_t == NULL)
+             break;
+            if(qz_date_time_t_old.min != date_time.min) //
+            {
+               qz_date_time_t_old.min = date_time.min;             
+               qz_Interface3_set_time((uint8_t)(date_time.hour&0xff), (uint8_t)(date_time.min&0xff));
+            }
+            if(qz_date_time_t_old.day !=date_time.day)
+            {
+                qz_date_time_t_old.day = date_time.day;
+                qz_Interface3_set_date(date_time.day, date_time.month, date_time.year);
+                qz_Interface3_set_week(date_time.week);
+            }
+             
+        }break;   
+    }
+    
+}
+
