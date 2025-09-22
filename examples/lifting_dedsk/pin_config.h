@@ -1,8 +1,8 @@
 #pragma once
 
 
-#define WIFI_SSID             "xinyuandianzi"
-#define WIFI_PASSWORD         "AA15994823428"
+#define WIFI_SSID             "WiFi-SSID"
+#define WIFI_PASSWORD         "WIFI-PASSWORD"
 
 #define WIFI_CONNECT_WAIT_MAX (30 * 1000)
 

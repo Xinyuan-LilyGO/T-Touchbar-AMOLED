@@ -7,7 +7,7 @@
 #include "time_date.h"
 #include <WiFi.h>
 #include "time.h"
-#include "sntp.h"
+#include "esp_sntp.h"
 #define TOUCH_MODULES_CST_SELF
 #include "TouchLib.h"
 #include "Wire.h"
@@ -565,7 +565,7 @@ void lv_show_time_date(void)
     lv_obj_set_style_text_align(date_label, LV_TEXT_ALIGN_CENTER, 0);
     lv_obj_set_pos(date_label, 12, 18);              
     lv_obj_set_size(date_label, 270, 100);				
-    lv_obj_set_style_text_font(date_label, &AlimamaShuHeiTi_Bold_54, LV_PART_MAIN);
+    lv_obj_set_style_text_font(date_label, &lv_font_montserrat_48, LV_PART_MAIN);
 
     char time_t[30] = { 0 };
     sprintf(time_t, "%02d:%02d",show_timeinfo.tm_hour+6>=24?show_timeinfo.tm_hour+6-24:show_timeinfo.tm_hour+6, show_timeinfo.tm_min);
